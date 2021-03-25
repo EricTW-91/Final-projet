@@ -1,13 +1,40 @@
 // Variables
 let minefieldArray = [];
 let mineCount_show = 10; // Showing how many landmine during playing.
+let timerFlag = false;
 let timer = 0;
+let mineCount = 0;
+let sideLength = 0;
 
 
 
+
+
+// Setup the minefield.
+function setup(){
+    const difficulty = $('#difficulty').val();
+
+    
+    creatMinefieldArray(difficulty);
+    $('.timer').text(0);// Reset timer.
+    $('.mineCount').text(mineCount_show);// Reset mine count.
+    
+    $('.minefield').empty().css('grid-template-columns', `repeat(${sideLength} ,1fr)`);
+
+    for(r=0; r<sideLength; r++){
+        for(c=0; c<sideLength; c++){
+            $('.minefield').append(`<div class="cell">${minefieldArray[r][c]}</div>`)
+        }
+    }
+
+    //test
+    console.log(sideLength);
+    console.log(minefieldArray);
+}
+
+// Creat a minefield array
 function creatMinefieldArray(difficulty){ 
-    let mineCount = 0;
-    let sideLength = 0;
+    
     let index = 0;
     let tempArr = [];
 
@@ -33,54 +60,35 @@ function creatMinefieldArray(difficulty){
         if(i<mineCount){
             tempArr.push('m');
         }else{
-            tempArr.push('');
+            tempArr.push('x');
         }
     }
     tempArr.sort(()=>{return Math.random()-0.5});// It randoms landmines.
 
-    for(c=0; c<sideLength; c++){ // Placing into the minefield
+    for(r=0; r<sideLength; r++){ // Placing into the minefield
         minefieldArray.push([]);
-        for(r=0; r<sideLength; r++){
-            minefieldArray[c].push(tempArr[index]);
+        for(c=0; c<sideLength; c++){
+            minefieldArray[r].push(tempArr[index]);
             index++;
         }
     }
 
 }
 
-const setpuFunctions = {
-    
-    // Setup difficulty.
-    difficultyInput: function(){
-
-    },
-    // Setup the minefield.
-    setup: function(){
-        const difficulty = $('#difficulty').val();
-
-        
-
-        creatMinefieldArray(difficulty); // Creat a minefield array.
-        $('.timer').empty().append(0);
-        $('.mineCount').empty().append(mineCount_show);
-        
-
-        //test
-        console.log(difficulty);
-        console.log(minefieldArray);
-    }
-}
-
-
-
-
-
-// Inital function
+// Setup inital status.
 function init(){
     $('.mineCount').append(mineCount_show);
     $('.timer').append(0);
-    setpuFunctions.setup();  
+    setup();  
 }
 
 
 init();
+
+// Count the time.
+setInterval(()=>{
+    if(timerFlag){
+        timer++;
+        $('.timer').text(timer);  
+    }
+}, 1000)  
