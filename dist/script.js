@@ -13,9 +13,10 @@ let sideLength = 0;
 // Setup the minefield.
 function setup(){
     const difficulty = $('#difficulty').val();
-
+    let arroundCount = 0;
     
     creatMinefieldArray(difficulty);
+    timerFlag = false;
     $('.timer').text(0);// Reset timer.
     $('.mineCount').text(mineCount_show);// Reset mine count.
     
@@ -23,12 +24,27 @@ function setup(){
 
     for(r=0; r<sideLength; r++){
         for(c=0; c<sideLength; c++){
-            $('.minefield').append(`<div class="cell">${minefieldArray[r][c]}</div>`)
+            arroundCount = 0;
+            if(minefieldArray[r][c] == 'x'){ // Input landmines
+                $('.minefield').append(`<div class="cell">${minefieldArray[r][c]}</div>`);
+            }else{ // Input number cells.
+
+                // Check landmines arround.
+                for(i=(-1); i<2; i++){
+                    for(j=(-1); j<2; j++){
+                        if((r+i)>=0 && (c+j)>=0 && (r+i)<sideLength && (c+j)<sideLength && minefieldArray[r+i][c+j] == 'x'){
+                            arroundCount++;
+                        } 
+                    }
+                }
+                $('.minefield').append(`<div class="cell">${arroundCount}</div>`);
+
+            }
+            
         }
     }
 
     //test
-    console.log(sideLength);
     console.log(minefieldArray);
 }
 
@@ -58,15 +74,15 @@ function creatMinefieldArray(difficulty){
     // Set landmines in the minefieldArray.
     for(i=0; i<(sideLength**2); i++){
         if(i<mineCount){
-            tempArr.push('m');
-        }else{
             tempArr.push('x');
+        }else{
+            tempArr.push('');
         }
     }
     tempArr.sort(()=>{return Math.random()-0.5});// It randoms landmines.
 
-    for(r=0; r<sideLength; r++){ // Placing into the minefield
-        minefieldArray.push([]);
+    for(r=0; r<sideLength; r++){ // Placing into the minefield.
+        minefieldArray.push([]); // Make array 2 dimentional.
         for(c=0; c<sideLength; c++){
             minefieldArray[r].push(tempArr[index]);
             index++;
