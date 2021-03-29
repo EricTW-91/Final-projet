@@ -4,21 +4,32 @@
     padding: 0;
 }
 
-.minefield{
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    place-items: center;
+// .minefield{
+//     display: grid;
+//     grid-template-columns: repeat(8, 1fr);
+//     place-items: center;
     
 
-    height: 700px;
-    width: 700px;
-    margin: 0 auto;
-    border-collapse: collapse;
+//     height: 700px;
+//     width: 700px;
+//     margin: 0 auto;
+//     border-collapse: collapse;
 
-    .cell{
-        border: solid black 1px;
-        width: 100%;
-        height: 100%;
+//     .cell{
+//         border: solid black 1px;
+        // width: 100%;
+//         height: 100%;
+//     }
+
+// }
+
+main{
+    display: grid;
+    place-items: center;
+    canvas{
+        // width: 50%;
+        // height: 700px;
+        border: 1px solid black;
+        margin: 5vh auto;
     }
-
 }

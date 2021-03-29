@@ -14,7 +14,7 @@
         <div class="logo">MineSweeper</div>
     </header>
     <section>
-        <select id="difficulty" onchange="setup()">
+        <select id="difficulty" onchange="setField()">
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>
             <option value="hard">Hard</option>
@@ -24,9 +24,10 @@
         <button id="restartBt" onclick="init()">Restart</button>
     </section>
     <main>
-        <div class="minefield">
+        <!-- <div class="minefield">
  
-        </div>
+        </div> -->
+        <canvas width="700px" height="700px" onmouseup="cellRevealed(event)" onmousemove="getCoordinate(event)" oncontextmenu="event.preventDefault()"></canvas>
     </main>
 </body>
 </html>
