@@ -1,47 +1,45 @@
-// Variables
-let gameOverFlag = false;
-let minefieldArray = [];
-let timerFlag = false;
-let timer = 0;
-let mineCount = 10;
-let sideCellsCount = 8;
+// DOM Variables
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext("2d");
-let cellLength = 35;
+// Global Variables
+let sideCount, arrayCol, arrayRow, choosenCell, positionX, positionY, minefieldArray;
+let timer = 0;
+let mineCount = 10;
+let gameStart = false;
+let gameOverFlag;
+let cellLength = 35; // Define the size of per cell.
 let cellObj = {};
 let coveredCells = 0;
-let arrayCol, arrayRow, choosenCell, positionX, positionY;
 
 
 
 
 // Setup inital status.
 function init(){
-    // $('.mineCount').append(mineCount_show);
-    // $('.timer').append(0);
     setField();  
 }
 
-//
 function levelSet(level){
     if(level == 'easy'){ // easy: 8*8(10)
         mineCount = 10;
-        sideCellsCount = 8;
+        sideCount = 8;
     }else if(level == 'medium'){ // medium: 14*14(40)
         mineCount = 40;
-        sideCellsCount = 14;
+        sideCount = 14;
     }else if(level == 'hard'){ // hard: 20*20(99)
         mineCount = 99;
-        sideCellsCount = 20;
+        sideCount = 20;
     }
 }
 
 // Setup the minefield.
 function setField(){
+    // $('main').empty().append(`<canvas></canvas>`);
+
     const difficulty = document.getElementById('difficulty').value;
-    gameOverFlag = false;
     timer = 0;
-    timerFlag = false;
+    gameStart = false;
+    gameOverFlag = false;
     $('.timer').text(timer);// Reset timer.     
 
     levelSet(difficulty);
@@ -54,17 +52,17 @@ function setField(){
 
 }
 
-// Creat a minefield array
-function creatMinefieldArray(difficulty){ 
+// Creat a minefield array with objects.
+function creatMinefieldArray(){ 
     let index = 0;
     let tempArr = [];
     let arroundCount = 0;
 
     // Creat a 2 dimentional empty array.
-    minefieldArray = Array.from(Array(sideCellsCount), () => new Array(sideCellsCount));
+    minefieldArray = Array.from(Array(sideCount), () => new Array(sideCount));
     
     // Set landmines in the minefieldArray.
-    for(i=0; i<(sideCellsCount**2); i++){
+    for(i=0; i<(sideCount**2); i++){
         if(i<mineCount){
             tempArr.push('x');
         }else{
@@ -73,8 +71,8 @@ function creatMinefieldArray(difficulty){
     }
     tempArr.sort(()=>{return Math.random()-0.5});// It randoms landmines.
 
-    for(r=0; r<sideCellsCount; r++){ // Placing into the minefield.
-        for(c=0; c<sideCellsCount; c++){
+    for(r=0; r<sideCount; r++){ // Placing into the minefield.
+        for(c=0; c<sideCount; c++){
             cellObj = {};
             cellObj.x = c;
             cellObj.y = r;
@@ -91,15 +89,15 @@ function creatMinefieldArray(difficulty){
     }
 
     // Set numbers in other cells.
-    for(r=0; r<sideCellsCount; r++){
-        for(c=0; c<sideCellsCount; c++){
+    for(r=0; r<sideCount; r++){
+        for(c=0; c<sideCount; c++){
             arroundCount = 0;
             if(minefieldArray[r][c].content != 'x'){
                 cellObj = {};
                 // Check landmines arround.
                 for(i=(-1); i<2; i++){
                     for(j=(-1); j<2; j++){
-                        if((r+i)>=0 && (c+j)>=0 && (r+i)<sideCellsCount && (c+j)<sideCellsCount && minefieldArray[r+i][c+j].content == 'x'){
+                        if((r+i)>=0 && (c+j)>=0 && (r+i)<sideCount && (c+j)<sideCount && minefieldArray[r+i][c+j].content == 'x'){
                             arroundCount++;
                         }
 
@@ -119,14 +117,14 @@ function creatMinefieldArray(difficulty){
 }
 
 function creatCanvas(){
-    canvas.width = cellLength * sideCellsCount + sideCellsCount * 3 + 3;
+    canvas.width = cellLength * sideCount + sideCount * 3 + 3;
     canvas.height = canvas.width;
     
     // Creat a grid by difficulty
-    for(r=0; r<sideCellsCount; r++){
+    for(r=0; r<sideCount; r++){
         let x = 3;
         let y = r * (cellLength + 3) + 3;
-        for(c=0; c<sideCellsCount; c++){
+        for(c=0; c<sideCount; c++){
             x = c * (cellLength + 3) + 3;
             ctx.strokeRect(x,y,cellLength,cellLength);
 
@@ -140,17 +138,94 @@ function creatCanvas(){
 
 function printout(){
     
-    for(r=0; r<sideCellsCount; r++){
-        for(c=0; c<sideCellsCount; c++){
+    for(r=0; r<sideCount; r++){
+        for(c=0; c<sideCount; c++){
             let cell = minefieldArray[r][c];
-            positionX = (canvas.width / sideCellsCount) * cell.x + 10;
-            positionY = (canvas.height / sideCellsCount) * cell.y + 30;
-            if(cell.status == true && cell.flag == false){
-                ctx.fillStyle = "#FFFFFF";
+            positionX = (canvas.width / sideCount) * cell.x + 10;
+            positionY = (canvas.height / sideCount) * cell.y + 30;
+
+            if(gameOverFlag == true && cell.flag == true && cell.content != "x"){
+                positionX = (canvas.width / sideCount) * cell.x + 10;
+                positionY = (canvas.height / sideCount) * cell.y + 30;
+                ctx.fillStyle = "red";
                 ctx.fillRect(positionX-6, positionY-25, 28, 28);
-                ctx.fillStyle = "#000000";
+                ctx.fillStyle = "#FFFFFF";
                 ctx.font = "30px Verdana";
                 ctx.fillText(cell.content, positionX, positionY);
+    
+            }else if(cell.status == true && cell.flag == false){
+                switch(cell.content){
+                    case "x":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#FF0000";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+                    case "0":
+                        ctx.fillStyle = "#AAAAAA";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        break;
+                    case "1":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#000000";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+                    case "2":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#0000FF";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+                    case "3":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#00BB00";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+                    case "4":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#FFBB00";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+                    case "5":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#FF00FF";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+
+                    case "6":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#FF0000";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+
+                    case "7":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#00FFFF";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+                    case "8":
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(positionX-6, positionY-25, 28, 28);
+                        ctx.fillStyle = "#900090";
+                        ctx.font = "30px Verdana";
+                        ctx.fillText(cell.content, positionX, positionY);
+                        break;
+                }
+
             }
         }
     }
@@ -160,10 +235,10 @@ function printout(){
 }
 
 function gameOver(result){
-    timerFlag = false;
+    gameStart = false;
     gameOverFlag = true;
-    for(r=0; r<sideCellsCount; r++){
-        for(c=0; c<sideCellsCount; c++){
+    for(r=0; r<sideCount; r++){
+        for(c=0; c<sideCount; c++){
             let cell = minefieldArray[r][c];
         
             if(cell.status == false){
@@ -172,22 +247,23 @@ function gameOver(result){
         }
     }
     alert(result);
+    printout();
 }
 
 function expand(){
     let expandFlag = true;
     while(expandFlag){
         expandFlag = false;
-        for(r=0; r<sideCellsCount; r++){
-            for(c=0; c<sideCellsCount; c++){
+        for(r=0; r<sideCount; r++){
+            for(c=0; c<sideCount; c++){
                 if(minefieldArray[r][c].content == '0' && minefieldArray[r][c].status == true){
                     // Turn status of landmines arround into true.
                     for(i=(-1); i<2; i++){
                         for(j=(-1); j<2; j++){
-                            if((r+i)>=0 && (c+j)>=0 && (r+i)<sideCellsCount && (c+j)<sideCellsCount && minefieldArray[r+i][c+j].status == false){
-                            expandFlag = true;
-                            }
-                            if((r+i)>=0 && (c+j)>=0 && (r+i)<sideCellsCount && (c+j)<sideCellsCount){
+                            if((r+i)>=0 && (c+j)>=0 && (r+i)<sideCount && (c+j)<sideCount){
+                                if(minefieldArray[r+i][c+j].status == false){
+                                expandFlag = true; // Loop untill there is no uncovered cell been checked.
+                                }
                                 minefieldArray[r+i][c+j].status = true;
                             }
                         }
@@ -195,13 +271,46 @@ function expand(){
                 }
             }
         }
+        printout();
+
     }
 }
 
+function revealAround(cell){
+    let arroundFlagCount = 0;
+    for(i=(-1); i<2; i++){
+        for(j=(-1); j<2; j++){
+            if((cell.y+i)>=0 && (cell.x+j)>=0 && (cell.y+i)<sideCount && (cell.x+j)<sideCount && minefieldArray[cell.y+i][cell.x+j].flag == true){
+                arroundFlagCount++;
+            }
+        }
+    }
+
+    console.log(arroundFlagCount);
+    if(arroundFlagCount >= parseInt(cell.content)){
+        for(i=(-1); i<2; i++){
+            for(j=(-1); j<2; j++){
+                if((cell.y+i)>=0 && (cell.x+j)>=0 && (cell.y+i)<sideCount && (cell.x+j)<sideCount && minefieldArray[cell.y+i][cell.x+j].status == false && minefieldArray[cell.y+i][cell.x+j].flag == false){
+                    minefieldArray[cell.y+i][cell.x+j].status = true;
+                    if(minefieldArray[cell.y+i][cell.x+j].content == "x"){
+                        return gameOver("You lose!!!");
+                    }else if(minefieldArray[cell.y+i][cell.x+j].content == "0"){
+                        expand();
+                    }
+                }
+            }
+        }
+
+    }
+
+    printout();
+    
+}
+
 function checkProgress(){
-    coveredCells = sideCellsCount ** 2;
-    for(r=0; r<sideCellsCount; r++){
-        for(c=0; c<sideCellsCount; c++){
+    coveredCells = sideCount ** 2;
+    for(r=0; r<sideCount; r++){
+        for(c=0; c<sideCount; c++){
             if(minefieldArray[r][c].flag == true || minefieldArray[r][c].status == true){
                 coveredCells--;
             }
@@ -209,38 +318,66 @@ function checkProgress(){
     }
 
     if(coveredCells == 0){
-        timerFlag = false;
+        gameStart = false;
         gameOver("You win!!!");
     }
 }
 
-function cellRevealed(event){
-    timerFlag = true;
-    
+function checkEasyPlay(event){
+
     let coord = getCoordinate(event);
-
-    // Match coord with minefield array.
-    arrayCol = parseInt(coord[0] / (canvas.width / sideCellsCount));
-    arrayRow = parseInt(coord[1] / (canvas.height / sideCellsCount));
-    choosenCell = minefieldArray[arrayRow][arrayCol];
     
-    if(event.button == 0 && choosenCell.flag == false && gameOverFlag == false){
-        if(choosenCell.status == false){
-            choosenCell.status = true;
-            if(choosenCell.content == "x"){
-                timerFlag = false;
-                gameOver("You lose!!!");
-            }else if(choosenCell.content == "0"){
-                expand();
-            }
-            
-            
+    // Match coord with minefield array.
+    arrayCol = parseInt(coord[0] / (canvas.width / sideCount));
+    arrayRow = parseInt(coord[1] / (canvas.height / sideCount));
+    choosenCell = minefieldArray[arrayRow][arrayCol];
 
+    while(gameStart == false && choosenCell.content != "0"){
+        creatMinefieldArray();
+        choosenCell = minefieldArray[arrayRow][arrayCol];
+        if(choosenCell.content == "0"){
+            gameStart = true;
         }
+    }
+
+    if(gameStart == true){
+        cellRevealed(event);
+    }
+
+    console.log(gameStart);
+    console.log(minefieldArray);
+}
+
+function cellRevealed(event){
+
+    // coord = getCoordinate(event);
+    
+    // // Match coord with minefield array.
+    // arrayCol = parseInt(coord[0] / (canvas.width / sideCount));
+    // arrayRow = parseInt(coord[1] / (canvas.height / sideCount));
+    // choosenCell = minefieldArray[arrayRow][arrayCol];
+
+
+    
+    if(event.button == 0 && choosenCell.status == true && gameOverFlag == false){
+        // Auto reveal cells around the uncoverd cell if enough flags arround.
+        revealAround(choosenCell);
+    }else if(event.button == 0 && choosenCell.flag == false && gameOverFlag == false && choosenCell.status == false){
+        
+        gameStart = true;
+
+        choosenCell.status = true;
+        if(choosenCell.content == "x"){
+            gameStart = false;
+            gameOver("You lose!!!");
+        }else if(choosenCell.content == "0"){
+            expand();
+        }
+        printout();
         
     }else if(event.button == 2 && gameOverFlag == false){ // Right click on a cell
-        positionX = (canvas.width / sideCellsCount) * choosenCell.x + 10;
-        positionY = (canvas.height / sideCellsCount) * choosenCell.y + 30;
+        positionX = (canvas.width / sideCount) * choosenCell.x + 10;
+        positionY = (canvas.height / sideCount) * choosenCell.y + 30;
         if(choosenCell.flag == false){
             choosenCell.flag = true;
 
@@ -255,23 +392,17 @@ function cellRevealed(event){
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(positionX-6, positionY-25, 28, 28);
         }
-
     }
 
     if(gameOverFlag == false){
         checkProgress()
     }
 
-    printout();
+    // printout();
 
-    $('.coveredCells').text(coveredCells);
-    
-    // Test!!
-    
-    // console.log(minefieldArray[parseInt(arrayRow)][parseInt(arrayCol)]);
-    // console.log(minefieldArray);
-    
-}
+
+}    
+
 
 function getCoordinate(event){
     let rectBounding = document.querySelector('canvas').getBoundingClientRect();
@@ -282,27 +413,13 @@ init();
 
 // Count the time.
 setInterval(() => {
-    if(timerFlag) {
+    if(gameStart) {
         timer++;
         $('.timer').text(timer);  
     }
-}, 1000)  
+}, 1000);
 
 
-$('.coveredCells').text(coveredCells);
 
-// Constructor function test
-
-function Test(e) {
-    this.a = e;
-    console.log(this);
-}
-Test(3);
-
-// Mouse move x,y test
-function draw(event){
-    let rectBounding = document.querySelector('canvas').getBoundingClientRect();
-    // console.log(`${parseInt(event.clientX-rectBounding.left)}, ${parseInt(event.clientY-rectBounding.top)}`);
-}
 
 
